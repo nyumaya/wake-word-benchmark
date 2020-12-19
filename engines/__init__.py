@@ -27,3 +27,7 @@ else:
 
 from porcupine import Porcupine
 import snowboydetect
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'nyumaya_audio_recognition/python/src'))
+
+from libnyumaya import AudioRecognition, FeatureExtractor

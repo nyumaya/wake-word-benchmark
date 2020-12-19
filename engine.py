@@ -24,13 +24,13 @@ from pocketsphinx.pocketsphinx import Decoder
 
 from engines import Porcupine
 from engines import snowboydetect
-
+from engines import AudioRecognition, FeatureExtractor
 
 class Engines(Enum):
     POCKET_SPHINX = 'PocketSphinx'
     PORCUPINE = 'Porcupine'
     SNOWBOY = 'Snowboy'
-
+    NYUMAYA = 'Nyumaya'
 
 SensitivityInfo = namedtuple('SensitivityInfo', 'min, max, step')
 
@@ -46,8 +46,11 @@ class Engine(object):
         raise NotImplementedError()
 
     @staticmethod
-    def frame_length():
-        return 512
+    def frame_length(engine_type):
+        if engine_type is Engines.NYUMAYA:
+            return 1600
+        else:
+            return 512
 
     @staticmethod
     def sensitivity_info(engine_type):
@@ -57,6 +60,8 @@ class Engine(object):
             return SensitivityInfo(0, 1, 0.1)
         elif engine_type is Engines.SNOWBOY:
             return SensitivityInfo(0, 1, 0.05)
+        elif engine_type is Engines.NYUMAYA:
+            return SensitivityInfo(0, 1, 0.1)
         else:
             raise ValueError("no sensitivity range for '%s'", engine_type.value)
 
@@ -68,6 +73,8 @@ class Engine(object):
             return PorcupineEngine(keyword, sensitivity)
         elif engine is Engines.SNOWBOY:
             return SnowboyEngine(keyword, sensitivity)
+        elif engine is Engines.NYUMAYA:
+            return NyumayaEngine(keyword, sensitivity)
         else:
             ValueError("cannot create engine of type '%s'", engine.value)
 
@@ -161,3 +168,28 @@ class SnowboyEngine(Engine):
 
     def __str__(self):
         return 'Snowboy'
+
+class NyumayaEngine(Engine):
+    def __init__(self, keyword, sensitivity):
+        #logging.info("INIT NYUMAYA")
+        keyword = keyword.lower()
+        model_relative_path = 'engines/nyumaya_audio_recognition/models/Hotword/%s_v1.0.0.premium' % keyword
+
+        model_str = os.path.join(os.path.dirname(__file__), model_relative_path)
+        libpath="engines/nyumaya_audio_recognition/lib/linux_x86_64/libnyumaya_premium.so.1.0.0"
+
+        self._extractor = FeatureExtractor(libpath)
+        self._detector = AudioRecognition(libpath)
+        keywordId = self._detector.addModel(model_str,sensitivity)
+
+    def process(self, pcm):
+        assert pcm.dtype == np.int16
+        #logging.info(len(pcm))
+        features = self._extractor.signalToMel(pcm.tobytes(),1.0)
+        return self._detector.runDetection(features) == 1
+
+    def release(self):
+        pass
+
+    def __str__(self):
+        return 'Nyumaya'

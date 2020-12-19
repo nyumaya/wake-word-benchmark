@@ -28,8 +28,7 @@ logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=loggin
 def run_sensitivity(pcm, num_frames, labels, num_keywords, engine_type, sensitivity):
     detector = Engine.create(engine_type, keyword=args.keyword, sensitivity=sensitivity)
 
-    frame_length = Engine.frame_length()
-
+    frame_length = Engine.frame_length(engine_type)
     num_false_alarms = 0
     num_true_detects = 0
     for i in range(num_frames):
@@ -61,7 +60,7 @@ def run(engine_type, min_false_alarm=0.1, max_false_alarm=0.1):
         for line in f.readlines():
             keyword_times_sec.append(tuple(float(x) for x in line.strip('\n').split(', ')))
 
-    frame_length = Engine.frame_length()
+    frame_length = Engine.frame_length(engine_type)
     num_frames = pcm.size // frame_length
 
     labels = np.zeros((num_frames,), dtype=np.bool)
@@ -124,6 +123,8 @@ if __name__ == '__main__':
         keyword_dataset=keyword_dataset,
         background_dataset=background_dataset,
         noise_dataset=noise_dataset)
+
+    #run(Engines.NYUMAYA) #uncomment to run nyumaya only
 
     with multiprocessing.Pool() as pool:
         save(pool.map(run, [x for x in Engines]))
