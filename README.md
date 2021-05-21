@@ -1,3 +1,9 @@
+# VERSION INFORMATION
+
+Benchmark for Nyumaya V1.X
+Make sure to use Branch V2.0 for 2.X Versions
+
+
 # Wake Word Benchmark
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/Picovoice/wakeword-benchmark/blob/master/LICENSE)
