@@ -51,7 +51,7 @@ def run_sensitivity(pcm, num_frames, labels, num_keywords, engine_type, sensitiv
     return miss_rate, false_alarm_per_hour
 
 
-def run(engine_type, min_false_alarm=0.1, max_false_alarm=0.1):
+def run(engine_type, min_false_alarm=0.0, max_false_alarm=100):
     pcm, sample_rate = soundfile.read(speech_path, dtype=np.int16)
     assert sample_rate == Dataset.sample_rate()
 

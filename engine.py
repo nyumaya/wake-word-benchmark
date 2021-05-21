@@ -19,17 +19,10 @@ from collections import namedtuple
 from enum import Enum
 
 import numpy as np
-from pocketsphinx import get_model_path
-from pocketsphinx.pocketsphinx import Decoder
 
-from engines import Porcupine
-from engines import snowboydetect
 from engines import AudioRecognition, FeatureExtractor
 
 class Engines(Enum):
-    POCKET_SPHINX = 'PocketSphinx'
-    PORCUPINE = 'Porcupine'
-    SNOWBOY = 'Snowboy'
     NYUMAYA = 'Nyumaya'
 
 SensitivityInfo = namedtuple('SensitivityInfo', 'min, max, step')
@@ -48,32 +41,20 @@ class Engine(object):
     @staticmethod
     def frame_length(engine_type):
         if engine_type is Engines.NYUMAYA:
-            return 1600
+            return 2600
         else:
             return 512
 
     @staticmethod
     def sensitivity_info(engine_type):
-        if engine_type is Engines.POCKET_SPHINX:
-            return SensitivityInfo(-21, 15, 3)
-        elif engine_type is Engines.PORCUPINE:
-            return SensitivityInfo(0, 1, 0.1)
-        elif engine_type is Engines.SNOWBOY:
-            return SensitivityInfo(0, 1, 0.05)
-        elif engine_type is Engines.NYUMAYA:
+        if engine_type is Engines.NYUMAYA:
             return SensitivityInfo(0, 1, 0.1)
         else:
             raise ValueError("no sensitivity range for '%s'", engine_type.value)
 
     @staticmethod
     def create(engine, keyword, sensitivity):
-        if engine is Engines.POCKET_SPHINX:
-            return PocketSphinxEngine(keyword, sensitivity)
-        elif engine is Engines.PORCUPINE:
-            return PorcupineEngine(keyword, sensitivity)
-        elif engine is Engines.SNOWBOY:
-            return SnowboyEngine(keyword, sensitivity)
-        elif engine is Engines.NYUMAYA:
+        if engine is Engines.NYUMAYA:
             return NyumayaEngine(keyword, sensitivity)
         else:
             ValueError("cannot create engine of type '%s'", engine.value)
@@ -173,10 +154,10 @@ class NyumayaEngine(Engine):
     def __init__(self, keyword, sensitivity):
         #logging.info("INIT NYUMAYA")
         keyword = keyword.lower()
-        model_relative_path = 'engines/nyumaya_audio_recognition/models/Hotword/%s_v1.0.0.premium' % keyword
+        model_relative_path = 'engines/nyumaya_audio_recognition/models/Hotword/%s_v2.0.23.premium' % keyword
 
         model_str = os.path.join(os.path.dirname(__file__), model_relative_path)
-        libpath="engines/nyumaya_audio_recognition/lib/linux_x86_64/libnyumaya_premium.so.1.0.0"
+        libpath="engines/nyumaya_audio_recognition/lib/linux_x86_64/libnyumaya_premium.so.2.0.0"
 
         self._extractor = FeatureExtractor(libpath)
         self._detector = AudioRecognition(libpath)
